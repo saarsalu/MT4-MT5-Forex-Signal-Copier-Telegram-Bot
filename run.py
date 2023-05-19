@@ -379,7 +379,11 @@ def CalculateTrade(update: Update, context: CallbackContext) -> int:
             # returns to CALCULATE to reattempt trade parsing
             return CALCULATE
     
-   
+    # attempts connection to MetaTrader and calculates trade information
+    asyncio.run(ConnectMetaTrader(update, context.user_data['trade'], False))
+
+    # asks if user if they would like to enter or decline trade
+    update.effective_message.reply_text("Would you like to enter this trade?\nTo enter, select: /yes\nTo decline, select: /no")
 
     return DECISION
 
@@ -394,7 +398,7 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
         update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
         return
 
-   
+    update.effective_message.reply_text("Unknown command. Use /trade to place a trade or /calculate to find information for a trade. You can also use the /help command to view instructions for this bot.")
 
     return
 
@@ -424,7 +428,7 @@ def help(update: Update, context: CallbackContext) -> None:
     """
 
     help_message = "This bot is used to automatically enter trades onto your MetaTrader account directly from Telegram. To begin, ensure that you are authorized to use this bot by adjusting your Python script or environment variables.\n\nThis bot supports all trade order types (Market Execution, Limit, and Stop)\n\nAfter an extended period away from the bot, please be sure to re-enter the start command to restart the connection to your MetaTrader account."
-   
+    commands = "List of commands:\n/start : displays welcome message\n/help : displays list of commands and example trades\n/trade : takes in user inputted trade for parsing and placement\n/calculate : calculates trade information for a user inputted trade"
     trade_example = "Example Trades 💴:\n\n"
     market_execution_example = "Market Execution:\nBUY GBPUSD\nEntry NOW\nSL 1.14336\nTP 1.28930\nTP 1.29845\n\n"
     limit_example = "Limit Execution:\nBUY LIMIT GBPUSD\nEntry 1.14480\nSL 1.14336\nTP 1.28930\n\n"

@@ -42,6 +42,52 @@ SYMBOLS = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY',
 # RISK FACTOR
 RISK_FACTOR = float(os.environ.get("RISK_FACTOR"))
 
+def ParseSignalV2(signal: str) -> dict:
+    """Starts process of parsing signal and entering trade on MetaTrader account.
+
+    Arguments:
+        signal: trading signal
+
+    Returns:
+        a dictionary that contains trade signal information
+    """
+
+    # converts message to list of strings for parsing
+    signal = signal.splitlines()
+    signal = [line.strip() for line in signal]
+
+    trade = {}
+
+    # determines the order type of the trade
+    if('Buy Stop' in signal[0]):
+        trade['OrderType'] = 'Buy Stop'
+    elif('Sell Stop' in signal[0]):
+        trade['OrderType'] = 'Sell Stop'
+    elif('Buy' in signal[0]):
+        trade['OrderType'] = 'Buy'
+    elif('Sell' in signal[0]):
+        trade['OrderType'] = 'Sell'
+    else:
+        return {}
+
+    # extracts symbol from trade signal
+    trade['Symbol'] = signal[0].split()[0]
+
+    # extracts entry price from the signal
+    trade['Entry'] = float(signal[0].split('@')[1].strip())
+    
+    # extracts stop loss and take profit from the signal
+    for line in signal[1:]:
+        if 'TP' in line:
+            trade['TP'] = float(line.split(':')[1].strip())
+        elif 'SL' in line:
+            trade['StopLoss'] = float(line.split(':')[1].strip())
+            
+    # adds risk factor to trade
+    trade['RiskFactor'] = RISK_FACTOR
+
+    return trade
+
 
 # Helper Functions
 def ParseSignal(signal: str) -> dict:
@@ -322,7 +368,7 @@ def PlaceTrade(update: Update, context: CallbackContext) -> int:
 
         try: 
             # parses signal from Telegram message
-            trade = ParseSignal(update.effective_message.text)
+            trade = ParseSignalV2(update.effective_message.text)
             
             # checks if there was an issue with parsing the trade
             if(not(trade)):
@@ -361,7 +407,7 @@ def CalculateTrade(update: Update, context: CallbackContext) -> int:
 
         try: 
             # parses signal from Telegram message
-            trade = ParseSignal(update.effective_message.text)
+            trade = ParseSignalV2(update.effective_message.text)
             
             # checks if there was an issue with parsing the trade
             if(not(trade)):

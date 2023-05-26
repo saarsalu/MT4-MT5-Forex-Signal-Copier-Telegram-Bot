@@ -87,7 +87,10 @@ def ParseSignalV2(signal: str) -> dict:
     # extracts stop loss and take profit from the signal
     for line in signal[1:]:
         if 'TP' in line:
-            trade['TP'] = float(line.split(':')[1].strip())
+            if trade.get('TP'):
+                trade['TP'].append(float(line.split(':')[1].strip()))
+            else:
+                trade['TP'] = [float(line.split(':')[1].strip())]                
         elif 'SL' in line:
             trade['StopLoss'] = float(line.split(':')[1].strip())
             

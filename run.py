@@ -384,13 +384,18 @@ def unknown_command(update: Update, context: CallbackContext) -> None:
         update: update from Telegram
         context: CallbackContext object that stores commonly used objects in handler callbacks
     """
-    if(not(update.effective_message.chat.username == TELEGRAM_USER)):
-        update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
+    msg = update.effective_message.text
+    import re
+    pattern = r'(\w+)\s(BUY\sSTOP|BUY\sLIMIT|BUY|SELL\sLIMIT|SELL\sSTOP|SELL)\s@\s(\d+\.\d+)'
+    match = re.search(pattern, msg)
+    if match:
+        return PlaceTrade(update, context)    
+    else:
+        if(not(update.effective_message.chat.username == TELEGRAM_USER)):
+            update.effective_message.reply_text("You are not authorized to use this bot! 🙅🏽‍♂️")
+            return
+        update.effective_message.reply_text(f"{msg}\n Unknown command. Use /trade to place a trade or /calculate to find information for a trade. You can also use the /help command to view instructions for this bot.")
         return
-
-    update.effective_message.reply_text("Unknown command. Use /trade to place a trade or /calculate to find information for a trade. You can also use the /help command to view instructions for this bot.")
-
-    return
 
 
 # Command Handlers
